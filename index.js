@@ -41,13 +41,16 @@ app.use(express.urlencoded({
 }))
 app.use(express.json());
 const server = http.createServer(app);
-
+const allowedOrigins = [
+  'https://interview-aifrontend.vercel.app', // Vercel Frontend
+  'http://localhost:5173' // Local dev
+];
 const io = new Server(server, {
   cors: { origin: "http://localhost:5173" },
 });
 
 app.use(  cors({
-  origin: "http://localhost:5173", // ✅ Allow frontend URL only
+  origin: allowedOrigins, // ✅ Allow frontend URL only
   credentials: true, // ✅ Allow cookies
 }));
 app.use(express.json());
