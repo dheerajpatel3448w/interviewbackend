@@ -384,7 +384,9 @@ app.post("/overallsubmit",async(req,res)=>{
 
 
           app.use(router);
+          const port = process.env.PORT||5000
+          console.log(process.env.PORT)
 connectdb().then(()=>{
-  server.listen(5000, () => console.log("Server running on port 5000"));
+  server.listen(port, () => console.log("Server running on port",port));
 })
 
