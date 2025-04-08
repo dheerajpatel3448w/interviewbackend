@@ -42,7 +42,7 @@ app.use(express.urlencoded({
 app.use(express.json());
 const server = http.createServer(app);
 const allowedOrigins = [
-  'https://interview-aifrontend.vercel.app/', // Vercel Frontend
+  'https://interview-aifrontend.vercel.app', // Vercel Frontend
   'http://localhost:5173' // Local dev
 ];
 const io = new Server(server, {
@@ -56,6 +56,15 @@ app.use(  cors({
 }));
 app.use(express.json());
 app.options('*', cors());
+
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://interview-aifrontend.vercel.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true'); // अगर credentials भेज रहे हैं
+  next();
+});
 const genAI = new GoogleGenerativeAI("AIzaSyCo7TMcB2VN62g6n_p4AwX1UipMckEyMIE");
 
 const generateQuestions = async ({role,level,techstack,type,amount}) => {
