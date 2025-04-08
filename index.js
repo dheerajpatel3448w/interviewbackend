@@ -42,7 +42,7 @@ app.use(express.urlencoded({
 app.use(express.json());
 const server = http.createServer(app);
 const allowedOrigins = [
-  'https://interview-aifrontend.vercel.app', // Vercel Frontend
+  'https://interview-aifrontend.vercel.app/', // Vercel Frontend
   'http://localhost:5173' // Local dev
 ];
 const io = new Server(server, {
