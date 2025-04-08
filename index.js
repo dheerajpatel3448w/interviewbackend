@@ -46,15 +46,16 @@ const allowedOrigins = [
   'http://localhost:5173' // Local dev
 ];
 const io = new Server(server, {
-  cors: { origin:allowedOrigins, credentials:true },
+  cors: { origin:allowedOrigins, credentials:true ,  methods: ["GET", "POST"],},
 });
 
 app.use(  cors({
   origin: allowedOrigins, // ✅ Allow frontend URL only
-  credentials: true, // ✅ Allow cookies
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'] // ✅ Allow cookies
 }));
 app.use(express.json());
-
+app.options('*', cors());
 const genAI = new GoogleGenerativeAI("AIzaSyCo7TMcB2VN62g6n_p4AwX1UipMckEyMIE");
 
 const generateQuestions = async ({role,level,techstack,type,amount}) => {
