@@ -61,9 +61,9 @@ export const login = async(req,res) => {
     const token = await generateToken(user);
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: false, // ✅ Must be `false` in local dev
-      sameSite: "lax",
+       httpOnly: true,
+  secure: true,          // ✅ important for HTTPS (Render)
+  sameSite: "None",
     });
   
     res.json({ message: "Login successful!" });

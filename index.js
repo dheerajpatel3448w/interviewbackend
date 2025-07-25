@@ -43,19 +43,19 @@ app.use(express.json());
 const server = http.createServer(app);
 const allowedOrigins = [
   'https://interview-aifrontend.vercel.app', // Vercel Frontend
-  'http://localhost:5173' // Local dev
+ // Local dev
 ];
 const io = new Server(server, {
   cors: { origin:allowedOrigins, credentials:true ,  methods: ["GET", "POST"],},
 });
 
 app.use(  cors({
-  origin: allowedOrigins, // ✅ Allow frontend URL only
+  origin : 'http://localhost:5173', // ✅ Allow frontend URL only
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'] // ✅ Allow cookies
+// ✅ Allow cookies
 }));
 app.use(express.json());
-app.options('*', cors());
+
 const genAI = new GoogleGenerativeAI("AIzaSyCo7TMcB2VN62g6n_p4AwX1UipMckEyMIE");
 
 const generateQuestions = async ({role,level,techstack,type,amount}) => {
