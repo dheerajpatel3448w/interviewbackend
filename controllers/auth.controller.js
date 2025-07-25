@@ -66,7 +66,7 @@ export const login = async(req,res) => {
   sameSite: "None",
     });
   
-    res.json({ message: "Login successful!" });
+    res.json({ message: "Login successful!" })
   
 }
 export const userprofile = async (req,res) => {
