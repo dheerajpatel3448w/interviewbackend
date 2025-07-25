@@ -69,3 +69,21 @@ export const login = async(req,res) => {
     res.json({ message: "Login successful!" });
   
 }
+export const userprofile = async (req,res) => {
+
+    const token =  req.cookies.token;
+    console.log(token);
+    if (!token) return res.status(401).json({ authenticated: false });
+  
+    
+      const decoded = await verifyToken(token);
+      console.log(decoded);
+     const user = await User.findById(decoded._id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+ 
+    return res.status(200).json({
+        user:user,
+        success:true
+    })
+  
+}
