@@ -72,7 +72,7 @@ export const login = async(req,res) => {
 export const userprofile = async (req,res) => {
 
     const token =  req.cookies.token;
-    console.log(token);
+    console.log(token,"ok");
     if (!token) return res.status(401).json({ authenticated: false });
   
     
