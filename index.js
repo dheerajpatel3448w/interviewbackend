@@ -36,10 +36,9 @@ const upload =multer({
 
 const app = express();
 app.use(cookieParser());
-app.use(express.urlencoded({
-  extended: true,
-}))
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 const server = http.createServer(app);
 const allowedOrigins = [
   'http://localhost:5173',
@@ -55,7 +54,7 @@ app.use(  cors({
   credentials: true,
 // ✅ Allow cookies
 }));
-app.use(express.json());
+
 
 const genAI = new GoogleGenerativeAI("AIzaSyCo7TMcB2VN62g6n_p4AwX1UipMckEyMIE");
 
