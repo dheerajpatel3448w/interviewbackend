@@ -42,7 +42,8 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 const server = http.createServer(app);
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://interview-aifrontend.vercel.app', // Vercel Frontend
+  'https://interview-aifrontend.vercel.app',
+  'https://interviewbackend-9qk4.onrender.com' // Vercel Frontend
  // Local dev
 ];
 const io = new Server(server, {
@@ -50,7 +51,7 @@ const io = new Server(server, {
 });
 
 app.use(  cors({
-  origin : 'http://localhost:5173', // ✅ Allow frontend URL only
+  origin : allowedOrigins, // ✅ Allow frontend URL only
   credentials: true,
 // ✅ Allow cookies
 }));
