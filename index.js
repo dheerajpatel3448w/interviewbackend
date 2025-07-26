@@ -45,7 +45,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 const server = http.createServer(app);
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://interview-aifrontend-2yxa9eobm-dheeraj-patels-projects.vercel.app',
+  'interview-aifrontend-7x44xvzwm-dheeraj-patels-projects.vercel.app',
   'https://interviewbackend-9qk4.onrender.com' // Vercel Frontend
  // Local dev
 ];
