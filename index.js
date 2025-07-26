@@ -46,7 +46,7 @@ const server = http.createServer(app);
 const allowedOrigins = [
   'http://localhost:5173',
   'https://interview-aifrontend.vercel.app',
-  'https://interview-aifrontend-c2ssy0ull-dheeraj-patels-projects.vercel.app',
+  'https://interview-aifrontend-2pm2wojo2-dheeraj-patels-projects.vercel.app',
   'https://interviewbackend-9qk4.onrender.com' // Vercel Frontend
  // Local dev
 ];
