@@ -22,17 +22,20 @@ let d={
   amount: "",
 };
 let f;
+const uploadsDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+// ...existing code...
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./uploads");
+    cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}.mp3`);
   },
-})
-const upload =multer({
-  storage: storage,
-})
+});
+const upload = multer({ storage: multer.memoryStorage() });
 
 const app = express();
 app.use(cookieParser());
@@ -285,41 +288,29 @@ app.post("/api/deepgram/speak", async (req, res) => {
 });
  // Save as WAV
  app.post("/api/deepgram/stt", upload.single("audio"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No audio file uploaded" });
+  }
 
-      if (!req.file) {
-          return res.status(400).json({ error: "No audio file uploaded" });
+  try {
+    // Use buffer from memory storage
+    const deepgram = createClient("06bf88ee40b231e5a1695e600131b39f5035da9b");
+
+    const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
+      req.file.buffer, // <-- Use buffer, not fs.readFileSync
+      {
+        model: "nova-3",
+        smart_format: true,
       }
-// index.js (node example)
-let a = req.file.filename;
-console.log(a);
-let b = path.join("C:/Users/patel/OneDrive/Desktop/thapa node,js'/discord/WEBSOKET/uploads",`${req.file.filename}`);
+    );
 
-const transcribeFile = async () => {
-  // STEP 1: Create a Deepgram client using the API key
-  const deepgram = createClient("06bf88ee40b231e5a1695e600131b39f5035da9b");
-
-  // STEP 2: Call the transcribeFile method with the audio payload and options
-  const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
-    // path to the audio file
-    fs.readFileSync(b),
-    // STEP 3: Configure Deepgram options for audio analysis
-    {
-      model: "nova-3",
-      smart_format: true,
-    }
-  );
-
-  if (error) throw error;
-  // STEP 4: Print the results
-  if (!error) console.dir(result, { depth: null });
-  res.json(result.results.channels[0].alternatives[0].transcript);
-};
-
-transcribeFile();
-
-          }  )
-
-
+    if (error) throw error;
+    res.json(result.results.channels[0].alternatives[0].transcript);
+  } catch (error) {
+    console.error("Deepgram STT Error:", error);
+    res.status(500).json({ error: "Deepgram STT failed" });
+  }
+});
 app.post('/submitreport',async(req, res) => {
   const report = (req.body)
   console.log("ok",report);
