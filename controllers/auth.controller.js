@@ -87,3 +87,16 @@ export const userprofile = async (req,res) => {
     })
   
 }
+ export const logout = (req,res) => {
+   const token =  req.cookies.token
+    console.log(token,"ok");
+    if (!token) return res.status(401).json({ authenticated: false });
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true, // ✅ important for HTTPS (Render)
+      sameSite: "None",
+    });
+    return res.status(200).json({ message: "Logout successful" });
+   
+ }
+ 
