@@ -8,6 +8,8 @@ const MODEL = "gpt-4o";
  * Generate interview questions using OpenAI
  */
 export const generateInterviewQuestions = async ({ role, level, techstack, type, amount }) => {
+  const systemMessage = `You are an expert technical interviewer. You always respond with valid JSON objects.`;
+
   const prompt = `Job Role: ${role}
 Experience Level: ${level}
 Tech Stack: ${techstack}
@@ -18,21 +20,22 @@ Instructions:
 - Generate exactly ${amount} interview questions.
 - The questions should focus on ${type} aspects, using the provided tech stack and experience level.
 - Do not include any additional text, explanations, or formatting symbols.
-- The output must be a JSON array of strings: ["Question 1", "Question 2"]
 - Ensure the language is clear and appropriate for a voice assistant.
 
-Return ONLY the JSON array, no extra text.`;
+Return ONLY this JSON format:
+{ "questions": ["Question 1", "Question 2", ...] }`;
 
   const result = await client.chat.completions.create({
     model: MODEL,
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      { role: "system", content: systemMessage },
+      { role: "user", content: prompt },
+    ],
     response_format: { type: "json_object" },
   });
 
-  const raw = result.choices[0].message.content;
-  const parsed = JSON.parse(raw);
-  // Handle both {"questions": [...]} and direct array
-  return Array.isArray(parsed) ? parsed : parsed.questions || [];
+  const parsed = JSON.parse(result.choices[0].message.content);
+  return parsed.questions || [];
 };
 
 /**
@@ -76,7 +79,10 @@ Return this exact JSON format:
 
   const result = await client.chat.completions.create({
     model: MODEL,
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      { role: "system", content: "You are an expert AI interview evaluator. Always respond with a valid JSON object." },
+      { role: "user", content: prompt },
+    ],
     response_format: { type: "json_object" },
   });
 
@@ -133,7 +139,10 @@ Generate a personalized 4-week study roadmap. Return ONLY this JSON format:
 
   const result = await client.chat.completions.create({
     model: MODEL,
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      { role: "system", content: "You are an expert technical interview coach. Always respond with a valid JSON object." },
+      { role: "user", content: prompt },
+    ],
     response_format: { type: "json_object" },
   });
 
@@ -161,7 +170,10 @@ Return ONLY this JSON:
 
   const result = await client.chat.completions.create({
     model: MODEL,
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      { role: "system", content: "You are an expert interviewer. Always respond with a valid JSON object." },
+      { role: "user", content: prompt },
+    ],
     response_format: { type: "json_object" },
   });
 
@@ -180,7 +192,10 @@ Return ONLY: { "questions": ["Q1", "Q2", ...] }`;
 
   const result = await client.chat.completions.create({
     model: MODEL,
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      { role: "system", content: "You are an expert interviewer. Always respond with a valid JSON object." },
+      { role: "user", content: prompt },
+    ],
     response_format: { type: "json_object" },
   });
 
@@ -214,7 +229,10 @@ Return ONLY: { "commentary": "<your 2-3 sentences>" }`;
 
   const result = await client.chat.completions.create({
     model: MODEL,
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      { role: "system", content: "You are an interview coach. Always respond with a valid JSON object." },
+      { role: "user", content: prompt },
+    ],
     response_format: { type: "json_object" },
   });
 
@@ -246,7 +264,10 @@ Return ONLY: { "questions": ["Q1", "Q2", ...] }`;
 
   const result = await client.chat.completions.create({
     model: MODEL,
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      { role: "system", content: "You are a senior technical interviewer. Always respond with a valid JSON object." },
+      { role: "user", content: prompt },
+    ],
     response_format: { type: "json_object" },
   });
 
@@ -278,7 +299,10 @@ ${trimmedResume}
 
   const result = await client.chat.completions.create({
     model: MODEL,
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      { role: "system", content: "You are a resume parsing expert. Always respond with a valid JSON object." },
+      { role: "user", content: prompt },
+    ],
     response_format: { type: "json_object" },
   });
 
