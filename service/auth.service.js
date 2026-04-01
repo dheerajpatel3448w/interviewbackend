@@ -1,17 +1,25 @@
 import jwt from "jsonwebtoken";
 
-const secret = '$#dpdominetar3448w'
+const getSecret = () => process.env.JWT_SECRET || "$#dpdominetar3448w";
 
 export const generateToken = async (user) => {
-    return jwt.sign({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar:user.avatar,
-        role:user.role
-    }, secret);
-}
+  return jwt.sign(
+    {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      role: user.role,
+    },
+    getSecret(),
+    { expiresIn: "7d" }
+  );
+};
 
 export const verifyToken = async (token) => {
-    return  jwt.verify(token, secret);
-}
+  try {
+    return jwt.verify(token, getSecret());
+  } catch (err) {
+    return null;
+  }
+};

@@ -1,102 +1,143 @@
 import { User } from "../models/user.model.js";
-import { verifyToken } from "../service/auth.service.js";
-import { generateToken } from "../service/auth.service.js";
-export const register = async(req,res) => {
-    try{
-const {fullName,email,username,password}= req.body;
-if (!fullName || !email || !password) {
-    return res.status(400).json({ 
-      success: false,
-      message: 'All fields are required' 
-    });
+import { verifyToken, generateToken } from "../service/auth.service.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import { successResponse, errorResponse } from "../utils/apiResponse.js";
+
+// ─────────────────────────────────────────────────────────────
+// POST /register
+// ─────────────────────────────────────────────────────────────
+export const register = asyncHandler(async (req, res) => {
+  const { fullName, email, username, password } = req.body;
+
+  if (!fullName || !email || !password || !username) {
+    return errorResponse(res, "All fields are required", 400);
   }
-console.log(fullName , email , password)
-  // Check if user already exists
-  const existingUser = await User.findOne({ email });
+
+  const existingUser = await User.findOne({ email: email.toLowerCase() });
   if (existingUser) {
-    return res.status(409).json({
-      success: false,
-      message: 'Email already registered'
-    });
+    return errorResponse(res, "Email already registered", 409);
   }
-const newUser = await User.create({
-    fullName,
-    email,
-    username,
-    password,
-    
- });
- console.log(newUser);
- res.status(201).json({
-    success: true,
-    message: 'User created successfully',
-    user: {
-      id: newUser._id,
-      name: newUser.fullName,
-      email: newUser.email
-    }
+
+  const newUser = await User.create({ fullName, email, username, password });
+
+  return successResponse(
+    res,
+    { id: newUser._id, name: newUser.fullName, email: newUser.email },
+    "User created successfully",
+    201
+  );
+});
+
+// ─────────────────────────────────────────────────────────────
+// POST /login
+// ─────────────────────────────────────────────────────────────
+export const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return errorResponse(res, "Email and password are required", 400);
+  }
+
+  const user = await User.findOne({ email: email.toLowerCase() });
+  if (!user) return errorResponse(res, "Invalid credentials", 401);
+
+  const isMatch = await user.isPasswordCorrect(password);
+  if (!isMatch) return errorResponse(res, "Invalid credentials", 401);
+
+  const token = await generateToken(user);
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
-} catch (error) {
-    console.error('Signup error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error'
-    });
+  return successResponse(res, {
+    user: {
+      id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      username: user.username,
+      avatar: user.avatar,
+      role: user.role,
+    },
+  }, "Login successful");
+});
+
+// ─────────────────────────────────────────────────────────────
+// GET /user/profile
+// ─────────────────────────────────────────────────────────────
+export const userprofile = asyncHandler(async (req, res) => {
+  const token = req.cookies?.token;
+  if (!token) return res.status(401).json({ authenticated: false });
+
+  const decoded = await verifyToken(token);
+  if (!decoded) return res.status(401).json({ authenticated: false, message: "Invalid or expired token" });
+
+  const user = await User.findById(decoded.id).select("-password -refreshToken");
+  if (!user) return errorResponse(res, "User not found", 404);
+
+  return successResponse(res, { user });
+});
+
+// ─────────────────────────────────────────────────────────────
+// PUT /user/profile
+// Update profile fields
+// ─────────────────────────────────────────────────────────────
+export const updateProfile = asyncHandler(async (req, res) => {
+  const allowedFields = [
+    "fullName", "username", "bio", "targetRole", "linkedinUrl",
+    "githubUrl", "currentLevel", "targetTechstack", "isPublicProfile",
+    "preferredInterviewType", "avatar",
+  ];
+
+  const updates = {};
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined) updates[field] = req.body[field];
   }
-  
-    
 
-}
-export const login = async(req,res) => {
-    const {email,password}= req.body;
-    console.log(email,password);
-    const user = await User.findOne({email})
-    if(!user){
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-    const isMatch = await user.isPasswordCorrect(password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+  const user = await User.findByIdAndUpdate(req.user.id, updates, {
+    new: true,
+    runValidators: true,
+  }).select("-password -refreshToken");
 
-    const token = await generateToken(user);
+  if (!user) return errorResponse(res, "User not found", 404);
 
-    res.cookie("token", token, {
-       httpOnly: true,
-  secure: true,          // ✅ important for HTTPS (Render)
-  sameSite: "None",
-    });
-  
-    res.json({ message: "Login successful!" })
-  
-}
-export const userprofile = async (req,res) => {
+  return successResponse(res, { user }, "Profile updated successfully");
+});
 
-    const token =  req.cookies.token
-    console.log(token,"ok");
-    if (!token) return res.status(401).json({ authenticated: false });
-  
-    
-      const decoded = await verifyToken(token);
-      console.log(decoded);
-     const user = await User.findById(decoded._id).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
- 
-    return res.status(200).json({
-        user:user,
-        success:true
-    })
-  
-}
- export const logout = (req,res) => {
-   const token =  req.cookies.token
-    console.log(token,"ok");
-    if (!token) return res.status(401).json({ authenticated: false });
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: true, // ✅ important for HTTPS (Render)
-      sameSite: "None",
-    });
-    return res.status(200).json({ message: "Logout successful" });
-   
- }
- 
+// ─────────────────────────────────────────────────────────────
+// PUT /user/change-password
+// ─────────────────────────────────────────────────────────────
+export const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return errorResponse(res, "Both current and new password are required", 400);
+  }
+  if (newPassword.length < 6) {
+    return errorResponse(res, "New password must be at least 6 characters", 400);
+  }
+
+  const user = await User.findById(req.user.id);
+  const isMatch = await user.isPasswordCorrect(currentPassword);
+  if (!isMatch) return errorResponse(res, "Current password is incorrect", 401);
+
+  user.password = newPassword;
+  await user.save();
+
+  return successResponse(res, null, "Password changed successfully");
+});
+
+// ─────────────────────────────────────────────────────────────
+// GET /user/logout
+// ─────────────────────────────────────────────────────────────
+export const logout = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+  });
+  return res.status(200).json({ success: true, message: "Logout successful" });
+};

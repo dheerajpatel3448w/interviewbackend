@@ -1,17 +1,15 @@
-
-import { login,register } from "../controllers/auth.controller.js";
-import { verifyToken,generateToken } from "../service/auth.service.js";
 import { Router } from "express";
-import { userprofile,logout } from "../controllers/auth.controller.js";
+import { login, register, userprofile, logout, updateProfile, changePassword } from "../controllers/auth.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
+import { authLimiter } from "../middleware/rateLimiter.js";
 
 const router = Router();
-router.route('/login').post(login);
 
-router.route('/register').post(register);
-
-
-router.route("/user/profile").get( userprofile);
-
-router.route("/user/logout").get(logout);
+router.post("/login", authLimiter, login);
+router.post("/register", authLimiter, register);
+router.get("/user/profile", userprofile);
+router.put("/user/profile", protect, updateProfile);
+router.put("/user/change-password", protect, changePassword);
+router.get("/user/logout", logout);
 
 export default router;
