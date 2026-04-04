@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 
+
 const client = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1",
@@ -351,7 +352,7 @@ Return ONLY this JSON format:
 
   const result = await client.chat.completions.create({
     model: MODEL,
-    messages: [{ role: "user", content: prompt }],
+    messages: [{ role: "user", content: prompt }]
   });
 
   const raw = result.choices[0].message.content;
